@@ -1,27 +1,28 @@
-# ---------------- bot.py v20+ ----------------
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import json
 import os
 
-TOKEN = "BOT_TOKEN"  # GitHub Secrets veya lokal test için token
+TOKEN = "BOT_TOKEN"  # <- buraya kendi bot token'ını yaz
+
 ID_FILE = "ids.json"
 
-# IDs dosyasını yükle veya oluştur
+# ids.json yükleme
 if os.path.exists(ID_FILE):
-    with open(ID_FILE, "r") as f:
+    with open(ID_FILE, "r", encoding="utf-8") as f:
         ids = json.load(f)
 else:
     ids = {"bigo": [], "tiktok": []}
 
 def save_ids():
-    with open(ID_FILE, "w") as f:
+    with open(ID_FILE, "w", encoding="utf-8") as f:
         json.dump(ids, f)
 
-# ----- Komutlar -----
-
+# ---------------- Komutlar ----------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Bot aktif ✅\n/ ping, /list, /add, /remove komutlarını kullanabilirsin")
+    await update.message.reply_text(
+        "Bot aktif ✅\nKomutlar:\n/ping\n/list\n/add <bigo/tiktok> <ID>\n/remove <bigo/tiktok> <ID>"
+    )
 
 async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Bot aktif ✅")
@@ -57,10 +58,9 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         save_ids()
     await update.message.reply_text(f"Güncel {platform.upper()} ID’leri: {', '.join(ids[platform])}")
 
-# ----- Uygulama başlat -----
+# ---------------- Application ----------------
 app = ApplicationBuilder().token(TOKEN).build()
 
-# Komut ekle
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("ping", ping))
 app.add_handler(CommandHandler("list", list_ids))
@@ -68,12 +68,14 @@ app.add_handler(CommandHandler("add", add))
 app.add_handler(CommandHandler("remove", remove))
 
 # Polling başlat
-app.run_polling()
+if __name__ == "__main__":
+    app.run_polling()
 
 async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Bot aktif ✅")
 
 app.add_handler(CommandHandler("ping", ping))
+
 
 
 
