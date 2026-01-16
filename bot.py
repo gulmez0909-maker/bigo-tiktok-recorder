@@ -66,4 +66,9 @@ print("Bot çalışıyor...")
 app.run_polling()
 
 app.run_polling()
+async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Bot aktif ✅")
+
+app.add_handler(CommandHandler("ping", ping))
+
 
