@@ -1,14 +1,13 @@
-import json
-import os
+# ---------------- bot.py v20+ ----------------
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+import json
+import os
 
-# Telegram bot token
-TOKEN = "BOT_TOKEN"  # Bunu GitHub Secrets veya lokal olarak değiştir
-
+TOKEN = "BOT_TOKEN"  # GitHub Secrets veya lokal test için token
 ID_FILE = "ids.json"
 
-# ids.json varsa oku, yoksa oluştur
+# IDs dosyasını yükle veya oluştur
 if os.path.exists(ID_FILE):
     with open(ID_FILE, "r") as f:
         ids = json.load(f)
@@ -19,7 +18,19 @@ def save_ids():
     with open(ID_FILE, "w") as f:
         json.dump(ids, f)
 
-# ---------------- COMMANDS ----------------
+# ----- Komutlar -----
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Bot aktif ✅\n/ ping, /list, /add, /remove komutlarını kullanabilirsin")
+
+async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Bot aktif ✅")
+
+async def list_ids(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = ""
+    for plat in ids:
+        msg += f"{plat.upper()}: {', '.join(ids[plat])}\n"
+    await update.message.reply_text(msg or "Henüz ID eklenmemiş.")
 
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(context.args) < 2:
@@ -46,29 +57,23 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         save_ids()
     await update.message.reply_text(f"Güncel {platform.upper()} ID’leri: {', '.join(ids[platform])}")
 
-async def list_ids(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = ""
-    for plat in ids:
-        msg += f"{plat.upper()}: {', '.join(ids[plat]) if ids[plat] else 'Boş'}\n"
-    await update.message.reply_text(msg)
-
-# ---------------- APPLICATION ----------------
-
+# ----- Uygulama başlat -----
 app = ApplicationBuilder().token(TOKEN).build()
 
-# Komutları ekle
+# Komut ekle
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("ping", ping))
+app.add_handler(CommandHandler("list", list_ids))
 app.add_handler(CommandHandler("add", add))
 app.add_handler(CommandHandler("remove", remove))
-app.add_handler(CommandHandler("list", list_ids))
 
 # Polling başlat
-print("Bot çalışıyor...")
 app.run_polling()
 
-app.run_polling()
 async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Bot aktif ✅")
 
 app.add_handler(CommandHandler("ping", ping))
+
 
 
