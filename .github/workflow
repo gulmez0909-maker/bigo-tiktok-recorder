@@ -1,1 +1,26 @@
+name: Auto Bigo + TikTok Record
 
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install ffmpeg -y
+          pip install requests python-telegram-bot==20.7
+
+      - name: Run recorder
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          DURATION: "1200"
+        run: python record_auto.py
